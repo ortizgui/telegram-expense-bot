@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  bot:
+    build: .
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://user:senha@db:5432/expenses
+      - TELEGRAM_TOKEN={{ telegram_token }}
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=senha
+      - POSTGRES_DB=expenses
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    restart: unless-stopped
