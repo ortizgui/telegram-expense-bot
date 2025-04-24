@@ -54,7 +54,8 @@ Cancels the current conversation
 
 1. Clone the repository and navigate to the project folder
 ```cli
-git clone https://github.com/username/expense-bot.git cd expense-bot
+git clone https://github.com/ortizgui/telegram-expense-bot 
+cd expense-bot
 ```
 
 2. Create a virtual environment
