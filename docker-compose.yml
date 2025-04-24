@@ -5,16 +5,26 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql://user:senha@db:5432/expenses
-      - TELEGRAM_TOKEN={{ telegram_token }}
+      - DATABASE_URL=postgresql://user:pwd@db:5432/expenses
+      - TELEGRAM_TOKEN=telegram_token
     restart: unless-stopped
 
   db:
     image: postgres:15-alpine
     environment:
       - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=senha
+      - POSTGRES_PASSWORD=pwd
       - POSTGRES_DB=expenses
     volumes:
       - ./data:/var/lib/postgresql/data
     restart: unless-stopped
+
+  pgweb:
+    image: sosedoff/pgweb
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgres://user:pwd@db:5432/expenses?sslmode=disable
