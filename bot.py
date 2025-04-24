@@ -22,10 +22,12 @@ def main():
     app.add_handler(commands.get_handlers())
 
     # Add report command handler
-    app.add_handler(CommandHandler('report', commands.report))
+    app.add_handler(commands.get_report_handler())
 
     # Add cancel command handler
     app.add_handler(CommandHandler('cancel', commands.cancel))
+
+    app.add_handler(CommandHandler('undo', commands.undo))
 
     logging.info("Bot iniciado. Rodando polling...")
     app.run_polling()

@@ -75,3 +75,37 @@ def get_monthly_report(user_id, month):
         return {row[0]: row[1] for row in rows}
     finally:
         put_connection(conn)
+
+
+def remove_last_expense(user_id):
+    """Removes the most recent expense entry for a user and returns its details."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as c:
+            # First get the last expense details
+            c.execute('''
+                SELECT id, amount, category, date, note
+                FROM expenses
+                WHERE user_id = %s
+                ORDER BY id DESC
+                LIMIT 1
+            ''', (user_id,))
+
+            last_expense = c.fetchone()
+
+            if last_expense:
+                # If found, delete it
+                c.execute('DELETE FROM expenses WHERE id = %s', (last_expense[0],))
+                conn.commit()
+
+                # Return the deleted expense details
+                return {
+                    "id": last_expense[0],
+                    "amount": last_expense[1],
+                    "category": last_expense[2],
+                    "date": last_expense[3],
+                    "note": last_expense[4] or ""
+                }
+        return None
+    finally:
+        put_connection(conn)
