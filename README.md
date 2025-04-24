@@ -1,80 +1,101 @@
 # Telegram Expense Bot
 
-Bot simples para registrar despesas via Telegram e gerar relatórios mensais.
+A simple Telegram bot for tracking expenses and generating monthly reports.
 
-## 1. Criação do Bot no Telegram
+## Project Overview
 
-1. Abra o Telegram e inicie uma conversa com @BotFather  
-2. Envie o comando /newbot  
-3. Escolha um nome para o seu bot (ex: ExpenseTrackerBot)  
-4. Escolha um username que termine com “bot” (ex: MyExpenseBot)  
-5. O BotFather retornará um TOKEN no formato 123456789:ABCdefGhIjKlmNOpQRsTUVwxyz  
-6. Copie esse TOKEN para usar na variável de ambiente
+This bot allows users to:
+- Track daily expenses with categories and notes
+- View monthly expense reports by category
+- Undo recent expense entries
 
-## 2. Funcionalidades
+## 1. Creating a Telegram Bot with BotFather
 
-- **/add [amount]**  
-    Inicia o fluxo de registro de despesa:
-    1. Valor (ex: 12.50)  
-    2. Categoria (botão inline)  
-    3. Data em YYYY-MM-DD ou /skip para hoje  
-    4. Nota ou /skip para nenhuma  
+1. Open Telegram and search for `@BotFather`
+2. Start a chat and send `/newbot` command
+3. Follow the prompts to set your bot's display name
+4. Choose a username ending with "bot" (e.g., `my_expense_tracker_bot`)
+5. BotFather will respond with a token like `123456789:ABCdefGhIjKlmNOpQrsTUVwxyz`
+6. Save this token - it's required to authenticate your bot
 
-- **/report YYYY-MM**  
-    Mostra o total por categoria no mês especificado (ex: /report 2025-04)
+## 2. Project Components
 
-## 3. Pré-requisitos
+- **bot.py**: Main entry point that initializes the bot and adds command handlers
+- **commands.py**: Implements conversation handlers for all bot interactions
+- **db.py**: Database interface for storing and retrieving expense data
+- **Dockerfile/docker-compose.yml**: Containerization configuration
 
-- Python 3.8 ou superior  
-- Biblioteca python-telegram-bot  
-- SQLite (já incluído no Python)  
-- TOKEN do seu bot (obtido com o BotFather)
+## 3. Features
 
-## 4. Instalação
+### `/add [amount]`
+Starts the expense recording flow:
+1. Amount (e.g., 12.50)
+2. Category (via inline keyboard)
+3. Date (today or custom date)
+4. Optional note
 
-1. Clone o repositório  
-      git clone https://github.com/usuario/expense_bot.git  
-      cd expense_bot  
+### `/report`
+Shows total expenses by category
 
-2. Crie e ative o ambiente virtual  
-      python3 -m venv venv  
-      source venv/bin/activate     (Linux/macOS)  
-      venv\Scripts\activate        (Windows)  
+### `/undo`
+Deletes the most recent expense entry
 
-3. Instale as dependências  
-      pip install -r requirements.txt  
+### `/cancel`
+Cancels the current conversation
 
-4. Defina a variável de ambiente  
-      export TELEGRAM_TOKEN="seu_token_aqui"   (Linux/macOS)  
-      set TELEGRAM_TOKEN="seu_token_aqui"      (Windows PowerShell)  
+## 4. Installation
 
-## 5. Inicialização do Banco de Dados
+### Prerequisites
+- Python 3.8+
+- PostgreSQL database
+- Telegram bot token
 
-O arquivo expenses.db será criado automaticamente na primeira vez que o bot for executado.  
-Não há necessidade de comandos manuais adicionais.
+### Option 1: Local Installation
 
-## 6. Execução do Bot
+1. Clone the repository and navigate to the project folder
+```cli
+git clone https://github.com/username/expense-bot.git cd expense-bot
+```
 
-Com o ambiente virtual ativado e a variável TELEGRAM_TOKEN definida, execute:  
-      python bot.py  
+2. Create a virtual environment
+```cli
+python -m venv venv source venv/bin/activate # Linux/macOS 
+venv\Scripts\activate # Windows
+```
 
-O bot iniciará o polling e aguardará comandos no Telegram.
+3. Install dependencies
+```cli
+pip install -r requirements.txt
+```
 
-## 7. Uso no Telegram
+4. Set environment variables
+```cli
+export TELEGRAM_TOKEN="your_bot_token" 
+export DATABASE_URL="postgresql://user:password@localhost:5432/expenses"
+```
 
-### Registrar despesa
+5. Run the bot
+```cli
+python bot.py
+```
 
-- Envie `/add` e siga os passos:  
-    1. Valor (ex: 12.50)  
-    2. Escolha a categoria  
-    3. Data em YYYY-MM-DD ou `/skip`  
-    4. Nota ou `/skip`
+### Option 2: Using Docker
+1. Edit `docker-compose.yml` to set your Telegram token
 
-- Ou envie `/add 12.50` para já pular a etapa de valor.
+2. Start the services
+```cli
+docker-compose up -d
+```
 
-### Gerar relatório mensal
+## 5. Database Structure
 
-- Envie `/report 2025-04`  
-- O bot retornará a soma por categoria para abril de 2025
+The application uses PostgreSQL to store expense data with a simple schema:
+- `expenses` table: Stores all expense records with user ID, amount, category, date, and optional note
 
----
+## 6. Technical Implementation
+
+- **Conversation Handlers**: Uses python-telegram-bot's ConversationHandler to manage multi-step interactions
+- **Connection Pooling**: Implements database connection pooling for efficient resource usage
+- **Docker Compose**: Includes PostgreSQL and pgweb (database admin tool) containers
+
+The pgweb interface is accessible at http://localhost:8081 when running with Docker.

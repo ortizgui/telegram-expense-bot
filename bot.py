@@ -8,7 +8,7 @@ import commands
 def main():
     token = os.getenv('TELEGRAM_TOKEN')
     if not token:
-        logging.error("Env var TELEGRAM_TOKEN não definida.")
+        logging.error("Environment variable TELEGRAM_TOKEN not defined.")
         return
 
     logging.basicConfig(
@@ -29,7 +29,7 @@ def main():
 
     app.add_handler(CommandHandler('undo', commands.undo))
 
-    logging.info("Bot iniciado. Rodando polling...")
+    logging.info("Bot started. Running polling...")
     app.run_polling()
 
 

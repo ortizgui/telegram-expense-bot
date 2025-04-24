@@ -20,7 +20,7 @@ async def start_add(update: Update, context: CallbackContext):
     if args:
         context.user_data['amount'] = args[0]
         return await ask_category(update, context)
-    await update.message.reply_text("Por favor, envie o valor da despesa (ex: 12.50).")
+    await update.message.reply_text("Please enter the expense amount (e.g. 12.50).")
     return AMOUNT
 
 
@@ -31,15 +31,14 @@ async def ask_category(update: Update, context: CallbackContext):
             amt = amt.replace(',', '.')
         context.user_data['amount'] = float(amt)
     except (TypeError, ValueError):
-        await update.message.reply_text("Valor inválido. Envie apenas números, ex: 12.50.")
+        await update.message.reply_text("Invalid amount. Please enter numbers only, e.g. 12.50.")
         return AMOUNT
 
-    # Rest of your function remains the same
     keyboard = [
         [InlineKeyboardButton(cat, callback_data=cat)] for cat in categories
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Escolha a categoria:", reply_markup=reply_markup)
+    await update.message.reply_text("Choose a category:", reply_markup=reply_markup)
     return CATEGORY
 
 
@@ -48,13 +47,12 @@ async def category_handler(update: Update, context: CallbackContext):
     await query.answer()
     context.user_data['category'] = query.data
 
-    # Create date selection buttons
     keyboard = [
         [InlineKeyboardButton("Today", callback_data="date_today")],
         [InlineKeyboardButton("Custom Date", callback_data="date_custom")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text("Selecione a data:", reply_markup=reply_markup)
+    await query.edit_message_text("Select a date:", reply_markup=reply_markup)
     return DATE
 
 
@@ -64,23 +62,22 @@ async def date_selection_handler(update: Update, context: CallbackContext):
     choice = query.data
 
     if choice == "date_today":
-        # Use today's date
         context.user_data['date'] = datetime.today().strftime('%Y-%m-%d')
-        await query.edit_message_text("Por favor, envie uma nota breve sobre a despesa ou /skip para nenhuma.")
+        await query.edit_message_text("Please enter a brief note about the expense or use /skip for none.")
         return NOTE
-    else:  # date_custom
-        await query.edit_message_text("Por favor, envie a data em formato YYYY-MM-DD:")
-        return DATE + 1  # New state for custom date input
+    else:
+        await query.edit_message_text("Please enter the date in YYYY-MM-DD format:")
+        return DATE + 1
 
 async def date_handler(update: Update, context: CallbackContext):
     text = update.message.text.strip()
     try:
         datetime.strptime(text, '%Y-%m-%d')
         context.user_data['date'] = text
-        await update.message.reply_text("Por favor, envie uma nota breve sobre a despesa ou /skip para nenhuma.")
+        await update.message.reply_text("Please enter a brief note about the expense or use /skip for none.")
         return NOTE
     except ValueError:
-        await update.message.reply_text("Formato inválido. Use YYYY-MM-DD.")
+        await update.message.reply_text("Invalid format. Please use YYYY-MM-DD.")
         return DATE + 1
 
 async def note_handler(update: Update, context: CallbackContext):
@@ -95,8 +92,7 @@ async def note_handler(update: Update, context: CallbackContext):
         note=note
     )
     await update.message.reply_text(
-        f"✅ Registrado: R${data['amount']} em {data['category']} em {data['date']}. "
-        f"Nota: {note or '–'}"
+        f"✅ Recorded: ${data['amount']} in {data['category']} on {data['date']}. Note: {note or '–'}"
     )
     return ConversationHandler.END
 
@@ -104,7 +100,6 @@ async def note_handler(update: Update, context: CallbackContext):
 async def report(update: Update, context: CallbackContext):
     args = context.args
     if not args:
-        # No arguments provided, show menu options
         keyboard = [
             [InlineKeyboardButton("Current Month", callback_data="report_current")],
             [InlineKeyboardButton("Last Month", callback_data="report_last")],
@@ -114,12 +109,11 @@ async def report(update: Update, context: CallbackContext):
         await update.message.reply_text("Select the report period:", reply_markup=reply_markup)
         return REPORT_MENU
 
-    # If arguments are provided, use the original flow
     month = args[0]
     try:
         datetime.strptime(month, '%Y-%m')
     except ValueError:
-        await update.message.reply_text("Formato inválido. Use YYYY-MM.")
+        await update.message.reply_text("Invalid format. Please use YYYY-MM.")
         return
 
     await generate_report(update, context, month)
@@ -144,7 +138,7 @@ async def report_menu_handler(update: Update, context: CallbackContext):
         return ConversationHandler.END
 
     elif choice == "report_custom":
-        await query.edit_message_text("Por favor, digite o mês no formato YYYY-MM:")
+        await query.edit_message_text("Please enter the month in YYYY-MM format:")
         return REPORT_CUSTOM
 
 
@@ -155,31 +149,29 @@ async def report_custom_handler(update: Update, context: CallbackContext):
         await generate_report(update, context, text)
         return ConversationHandler.END
     except ValueError:
-        await update.message.reply_text("Formato inválido. Use YYYY-MM.")
+        await update.message.reply_text("Invalid format. Please use YYYY-MM.")
         return REPORT_CUSTOM
 
 
 async def generate_report(update: Update, context: CallbackContext, month, is_callback=False):
     totals = db.get_monthly_report(update.effective_user.id, month)
     if not totals:
-        message = f"Sem despesas no mês {month}."
+        message = f"No expenses in {month}."
     else:
         lines = [f"*{cat}*: R${tot:.2f}" for cat, tot in totals.items()]
-        message = f"Relatório {month}:\n" + "\n".join(lines)
+        message = f"Report for {month}:\n" + "\n".join(lines)
 
     if is_callback:
         await update.callback_query.edit_message_text(message, parse_mode='Markdown')
     else:
         await update.message.reply_text(message, parse_mode='Markdown')
 
-# Handler de /cancel opcional
 async def cancel(update: Update, context: CallbackContext):
-    await update.message.reply_text("Operação cancelada.")
+    await update.message.reply_text("Operation canceled.")
     return ConversationHandler.END
 
 
 def get_handlers():
-    # Existing add conversation handler
     add_conv = ConversationHandler(
         entry_points=[CommandHandler('add', start_add)],
         states={
@@ -216,12 +208,10 @@ async def skip_note_handler(update: Update, context: CallbackContext):
         note=""
     )
     await update.message.reply_text(
-        f"✅ Registrado: R${data['amount']} em {data['category']} em {data['date']}. "
-        f"Nota: –"
+        f"✅ Recorded: ${data['amount']} in {data['category']} on {data['date']}. Note: '–'"
     )
     return ConversationHandler.END
 
-# Add this new handler
 async def amount_handler(update: Update, context: CallbackContext):
     context.user_data['amount'] = update.message.text
     return await ask_category(update, context)
